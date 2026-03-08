@@ -1,3 +1,9 @@
-altair
-pandas
 streamlit
+tensorflow
+numpy
+pandas
+joblib
+shap
+plotly
+matplotlib
+scikit-learn
