@@ -12,11 +12,8 @@ import os
 import numpy as np
 import joblib
 import streamlit as st
-import h5py
-import json
-import zipfile
-import tempfile
-from tensorflow.keras.models import load_model, model_from_json
+import tensorflow as tf
+from tensorflow.keras.models import load_model
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
@@ -32,63 +29,15 @@ MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models")
 ACTION_LABELS = {0: "Decrease Charging", 1: "Maintain Charging", 2: "Increase Charging"}
 
 
-def load_model_compat(filepath):
-    """Compatibility loader to handle 'batch_shape' in legacy configs."""
-    try:
-        return load_model(filepath, compile=False)
-    except Exception as e:
-        if "batch_shape" not in str(e):
-            raise e
-
-    if zipfile.is_zipfile(filepath):
-        with zipfile.ZipFile(filepath, 'r') as z:
-            with z.open('config.json') as f:
-                config_dict = json.load(f)
-
-            def fix_config(cf):
-                if isinstance(cf, dict):
-                    if 'batch_shape' in cf:
-                        cf['batch_input_shape'] = cf.pop('batch_shape')
-                    for k, v in cf.items():
-                        fix_config(v)
-                elif isinstance(cf, list):
-                    for item in cf:
-                        fix_config(item)
-
-            fix_config(config_dict)
-
-            from tensorflow.keras.utils import deserialize_keras_object
-            model = deserialize_keras_object(config_dict)
-
-            with tempfile.TemporaryDirectory() as tmpdir:
-                weights_path = os.path.join(tmpdir, 'weights.h5')
-                with open(weights_path, 'wb') as wf:
-                    wf.write(z.read('model.weights.h5'))
-                model.load_weights(weights_path)
-            return model
-    else:
-        with h5py.File(filepath, 'r') as f:
-            model_config = f.attrs.get('model_config')
-            if model_config is None:
-                raise ValueError("No model_config found in HDF5 file.")
-            model_config_str = model_config.decode('utf-8') if isinstance(model_config, bytes) else model_config
-            config_dict = json.loads(model_config_str)
-
-            def fix_config(cf):
-                if isinstance(cf, dict):
-                    if 'batch_shape' in cf:
-                        cf['batch_input_shape'] = cf.pop('batch_shape')
-                    for k, v in cf.items():
-                        fix_config(v)
-                elif isinstance(cf, list):
-                    for item in cf:
-                        fix_config(item)
-
-            fix_config(config_dict)
-            model = model_from_json(json.dumps(config_dict))
-
-        model.load_weights(filepath)
-        return model
+def load_model_safe(filepath):
+    """Safely load Keras models with custom objects."""
+    return load_model(
+        filepath,
+        compile=False,
+        custom_objects={
+            "Sequential": tf.keras.Sequential
+        }
+    )
 
 # ---------------------------------------------------------------------------
 # Model Loading (cached)
@@ -96,8 +45,8 @@ def load_model_compat(filepath):
 @st.cache_resource
 def load_models():
     """Load GRU, Double-DQN models and scalers."""
-    gru_model = load_model_compat(os.path.join(MODEL_DIR, "gru_soh_model.keras"))
-    dqn_model = load_model_compat(os.path.join(MODEL_DIR, "double_dqn_calibrated.keras"))
+    gru_model = load_model_safe(os.path.join(MODEL_DIR, "gru_soh_model.keras"))
+    dqn_model = load_model_safe(os.path.join(MODEL_DIR, "double_dqn_calibrated.keras"))
     scaler_X = joblib.load(os.path.join(MODEL_DIR, "gru_scaler_X.pkl"))
     scaler_y = joblib.load(os.path.join(MODEL_DIR, "gru_scaler_y.pkl"))
     return gru_model, dqn_model, scaler_X, scaler_y
