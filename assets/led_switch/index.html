@@ -1,0 +1,140 @@
+<html>
+
+<head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: transparent;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    .led-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 6px 0;
+    }
+
+    .switch-container {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: #d6d6d6;
+      border-radius: 50px;
+      box-shadow: inset -4px -4px 8px #ffffff, inset 4px 4px 8px #b0b0b0;
+      cursor: pointer;
+    }
+
+    .toggle-checkbox {
+      display: none;
+    }
+
+    .switch {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50px;
+      cursor: pointer;
+    }
+
+    .toggle {
+      position: absolute;
+      width: 20px;
+      height: 18px;
+      background: linear-gradient(145deg, #d9d9d9, #bfbfbf);
+      border-radius: 50px;
+      top: 3px;
+      left: 3px;
+      box-shadow: -2px -2px 5px #ffffff, 2px 2px 5px #b0b0b0;
+      transition: all 0.3s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .led {
+      width: 6px;
+      height: 6px;
+      background: grey;
+      border-radius: 50%;
+      box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease-in-out;
+    }
+
+    .toggle-checkbox:checked+.switch .toggle {
+      left: 21px;
+      background: linear-gradient(145deg, #cfcfcf, #a9a9a9);
+      box-shadow: -2px -2px 5px #ffffff, 2px 2px 5px #8a8a8a;
+    }
+
+    .toggle-checkbox:checked+.switch .led {
+      background: #eab308;
+      box-shadow: 0 0 6px 2px #eab308;
+    }
+
+    .switch:hover .toggle {
+      box-shadow: -2px -2px 8px #ffffff, 2px 2px 8px #9b9b9b;
+    }
+
+    .led-label-text {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="led-row">
+    <div class="switch-container">
+      <input class="toggle-checkbox" id="toggle-switch" type="checkbox">
+      <label class="switch" for="toggle-switch">
+        <div class="toggle">
+          <div class="led"></div>
+        </div>
+      </label>
+    </div>
+    <span class="led-label-text">🔧 Battery Sensor Inputs</span>
+  </div>
+  <script>
+    function sendMessageToStreamlitClient(type, data) {
+      const outData = Object.assign({
+        isStreamlitMessage: true,
+        type: type,
+      }, data);
+      window.parent.postMessage(outData, "*");
+    }
+    function init() {
+      sendMessageToStreamlitClient("streamlit:componentReady", { apiVersion: 1 });
+      sendMessageToStreamlitClient("streamlit:setFrameHeight", { height: 50 });
+    }
+    function sendValue(value) {
+      sendMessageToStreamlitClient("streamlit:setComponentValue", { value: value, dataType: "json" });
+    }
+    window.addEventListener("message", function (event) {
+      if (event.data.type === "streamlit:render") {
+        const args = event.data.args;
+        if (args.checked !== undefined) {
+          document.getElementById('toggle-switch').checked = args.checked;
+        }
+      }
+    });
+    var cb = document.getElementById("toggle-switch");
+    cb.addEventListener("change", function () {
+      sendValue(cb.checked);
+    });
+    window.addEventListener("load", init);
+  </script>
+</body>
+
+</html>

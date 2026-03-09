@@ -1,0 +1,273 @@
+<html>
+
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #333333;
+            padding: 0px 10px 10px 10px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .neu-input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .neu-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.45rem;
+            letter-spacing: 0.3px;
+        }
+
+        /* User Provided CSS */
+        .input-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #e0e5ec;
+            border-radius: 20px;
+            height: 42px;
+            padding: 0 16px;
+            box-shadow: inset 6px 6px 12px #bec3c9, inset -6px -6px 12px #ffffff;
+        }
+
+        .input-field {
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            width: 60%;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: #1e293b;
+            -moz-appearance: textfield;
+        }
+
+        .input-field::-webkit-outer-spin-button,
+        .input-field::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-field:focus {
+            outline: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .step-btn {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+        }
+
+        .step-btn:active {
+            background: rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <!-- Row 1 explicitly generated -->
+        <div class="neu-input-group">
+            <label class="neu-label">Internal Resistance — IR (Ω)</label>
+            <div class="input-container">
+                <input type="number" id="ir" class="input-field" step="0.001" min="0.01" max="0.08">
+                <div class="controls">
+                    <button class="step-btn" onclick="stepVal('ir', -0.001)">−</button>
+                    <button class="step-btn" onclick="stepVal('ir', 0.001)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="neu-input-group">
+            <label class="neu-label">Charge Capacity — QC (Ah)</label>
+            <div class="input-container">
+                <input type="number" id="qc" class="input-field" step="0.01" min="0.5" max="2.5">
+                <div class="controls">
+                    <button class="step-btn" onclick="stepVal('qc', -0.01)">−</button>
+                    <button class="step-btn" onclick="stepVal('qc', 0.01)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="neu-input-group">
+            <label class="neu-label">Discharge Capacity — QD (Ah)</label>
+            <div class="input-container">
+                <input type="number" id="qd" class="input-field" step="0.01" min="0.5" max="2.5">
+                <div class="controls">
+                    <button class="step-btn" onclick="stepVal('qd', -0.01)">−</button>
+                    <button class="step-btn" onclick="stepVal('qd', 0.01)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2 explicitly generated -->
+        <div class="neu-input-group">
+            <label class="neu-label">Average Temperature — Tavg (°C)</label>
+            <div class="input-container">
+                <input type="number" id="tavg" class="input-field" step="0.5" min="10" max="50">
+                <div class="controls">
+                    <button class="step-btn" onclick="stepVal('tavg', -0.5)">−</button>
+                    <button class="step-btn" onclick="stepVal('tavg', 0.5)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="neu-input-group">
+            <label class="neu-label">Maximum Temperature — Tmax (°C)</label>
+            <div class="input-container">
+                <input type="number" id="tmax" class="input-field" step="0.5" min="15" max="60">
+                <div class="controls">
+                    <button class="step-btn" onclick="stepVal('tmax', -0.5)">−</button>
+                    <button class="step-btn" onclick="stepVal('tmax', 0.5)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="neu-input-group">
+            <label class="neu-label">Charge Time (seconds)</label>
+            <div class="input-container">
+                <input type="number" id="chargetime" class="input-field" step="100" min="1000" max="10000">
+                <div class="controls">
+                    <button class="step-btn" onclick="stepVal('chargetime', -100)">−</button>
+                    <button class="step-btn" onclick="stepVal('chargetime', 100)">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function sendMessageToStreamlitClient(type, data) {
+            window.parent.postMessage(Object.assign({ isStreamlitMessage: true, type: type }, data), "*");
+        }
+
+        function init() {
+            sendMessageToStreamlitClient("streamlit:componentReady", { apiVersion: 1 });
+            sendMessageToStreamlitClient("streamlit:setFrameHeight", { height: 220 });
+        }
+
+        function getAllValues() {
+            return {
+                ir: parseFloat(document.getElementById('ir').value) || 0.04,
+                tavg: parseFloat(document.getElementById('tavg').value) || 30.0,
+                qc: parseFloat(document.getElementById('qc').value) || 1.5,
+                tmax: parseFloat(document.getElementById('tmax').value) || 35.0,
+                qd: parseFloat(document.getElementById('qd').value) || 1.5,
+                chargetime: parseFloat(document.getElementById('chargetime').value) || 5000
+            };
+        }
+
+        function sendValues() {
+            sendMessageToStreamlitClient("streamlit:setComponentValue", {
+                value: getAllValues(),
+                dataType: "json"
+            });
+        }
+
+        function stepVal(id, step) {
+            const el = document.getElementById(id);
+            let val = parseFloat(el.value) || 0;
+            let min = parseFloat(el.min);
+            let max = parseFloat(el.max);
+
+            val += step;
+
+            // Fix floating point precision issues
+            if (step < 1) {
+                val = parseFloat(val.toFixed(3));
+            } else {
+                val = Math.round(val);
+            }
+
+            if (val < min) val = min;
+            if (val > max) val = max;
+
+            el.value = val;
+            triggerChange();
+        }
+
+        let changeTimeout;
+        function triggerChange() {
+            clearTimeout(changeTimeout);
+            changeTimeout = setTimeout(sendValues, 100);
+        }
+
+        ['ir', 'tavg', 'qc', 'tmax', 'qd', 'chargetime'].forEach(id => {
+            document.getElementById(id).addEventListener('change', triggerChange);
+            document.getElementById(id).addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') triggerChange();
+            });
+        });
+
+        let isInitialized = false;
+        window.addEventListener("message", function (event) {
+            if (event.data.type === "streamlit:render") {
+                const args = event.data.args;
+                if (args.defaults && !isInitialized) {
+                    isInitialized = true;
+                    document.getElementById('ir').value = args.defaults.ir;
+                    document.getElementById('tavg').value = args.defaults.tavg;
+                    document.getElementById('qc').value = args.defaults.qc;
+                    document.getElementById('tmax').value = args.defaults.tmax;
+                    document.getElementById('qd').value = args.defaults.qd;
+                    document.getElementById('chargetime').value = args.defaults.chargetime;
+
+                    // Send back immediately so Python doesn't get None on first render
+                    sendValues();
+                }
+            }
+        });
+
+        window.addEventListener("load", init);
+    </script>
+</body>
+
+</html>

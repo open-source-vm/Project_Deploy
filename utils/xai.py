@@ -55,6 +55,7 @@ def _light_fig(figsize=(7, 4)):
     ax.xaxis.label.set_color(TXT)
     ax.yaxis.label.set_color(TXT)
     ax.title.set_color(TXT)
+    plt.tight_layout()
     return fig, ax
 
 def _fin(fig):
@@ -127,7 +128,7 @@ def generate_feature_importance_plot(shap_values, feature_names=None, chosen_act
     ax.barh(np.array(feature_names)[order], vals[order],
             color=[colors[i % 4] for i in order], edgecolor="#c5cbd3", lw=0.5)
     ax.set_xlabel("Mean |SHAP Value|", fontsize=10)
-    ax.set_title("Global Feature Importance", fontsize=13, fontweight="bold")
+    ax.set_title("SoH Prediction Feature Importance", fontsize=13, fontweight="bold")
     ax.grid(axis="x", alpha=0.2, color=GRID)
     return _fin(fig)
 
@@ -236,7 +237,7 @@ def generate_action_influence_plot(shap_values, feature_names=None):
     ax.set_xticks(x + w)
     ax.set_xticklabels(feature_names, fontsize=9, color=TXT)
     ax.set_ylabel("SHAP Value", fontsize=10)
-    ax.set_title("RL Action Influence per Feature", fontsize=13, fontweight="bold")
+    ax.set_title("RL Charging Decision Feature Influence", fontsize=13, fontweight="bold")
     ax.legend(fontsize=8, facecolor=CARD, edgecolor=GRID, labelcolor=TXT)
     ax.axhline(0, color=GRID, lw=0.6, ls="--")
     ax.grid(axis="y", alpha=0.15, color=GRID)
