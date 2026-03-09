@@ -78,6 +78,10 @@ try:
 except FileNotFoundError:
     pass
 
+# ── Custom Streamlit Components ──────────────────────────────────────────────
+led_switch = components.declare_component("led_switch", path="assets/led_switch")
+neu_inputs_component = components.declare_component("neu_inputs", path="assets/neu_input")
+
 # ── Initialize Session State ─────────────────────────────────────────────────
 defaults = {
     "ir": 0.04,
@@ -110,16 +114,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ── ⚙ Battery Inputs toggle button ───────────────────────────────────────────
-# Note: button fires a re-run; show_inputs is read on the NEXT frame.
-# We use a tiny trick: detect click BEFORE rendering the panel so
-# the panel immediately reflects the new state in the same script run.
-_col_btn, _col_pad = st.columns([1, 5])
-with _col_btn:
-    _clicked = st.button("⚙ Battery Inputs", use_container_width=True)
+# ── LED Toggle Switch (custom component) ─────────────────────────────────────
+led_res = led_switch(
+    checked=st.session_state.show_inputs,
+    key="led_toggle",
+    default=st.session_state.show_inputs,
+)
 
-if _clicked:
-    st.session_state.show_inputs = not st.session_state.show_inputs
+if led_res is not None and bool(led_res) != st.session_state.show_inputs:
+    st.session_state.show_inputs = bool(led_res)
+    st.rerun()
 
 # ── Battery Sensor Inputs panel (collapsible in main page) ───────────────────
 if st.session_state.show_inputs:

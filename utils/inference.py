@@ -9,11 +9,17 @@ Pipeline:
 """
 
 import os
+
+# Suppress TensorFlow logs and disable GPU before importing TF
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"          # hide INFO/WARNING/ERROR
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"          # skip oneDNN init
+
 import numpy as np
 import joblib
 import streamlit as st
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+import tensorflow as tf
+from tensorflow.keras.models import load_model as _keras_load
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -29,9 +35,7 @@ ACTION_LABELS = {0: "Decrease Charging", 1: "Maintain Charging", 2: "Increase Ch
 
 def load_model_safe(filepath):
     """Safely load Keras models with custom objects."""
-    import tensorflow as tf
-    from tensorflow.keras.models import load_model
-    return load_model(
+    return _keras_load(
         filepath,
         compile=False,
         custom_objects={
