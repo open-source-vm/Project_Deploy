@@ -44,7 +44,7 @@ st.set_page_config(
     page_title="Explainable AI EV-BMS Dashboard",
     page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",   # sidebar not needed now
 )
 
 # ── CSS ──────────────────────────────────────────────────────────────────────
@@ -56,7 +56,23 @@ try:
 except FileNotFoundError:
     pass
 
-# ── Header ───────────────────────────────────────────────────────────────────
+# ── Initialize Session State ─────────────────────────────────────────────────
+defaults = {
+    "ir": 0.04,
+    "qc": 1.5,
+    "qd": 1.5,
+    "tavg": 30.0,
+    "tmax": 35.0,
+    "chargetime": 5000,
+    "show_inputs": True,
+}
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  HEADER — title + subtitle
+# ══════════════════════════════════════════════════════════════════════════════
 st.markdown(
     '<h1 class="dashboard-title">'
     '⚡ Explainable AI EV Battery Management Dashboard'
@@ -71,35 +87,70 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ── ⚙ Battery Inputs toggle button ───────────────────────────────────────────
+# Note: button fires a re-run; show_inputs is read on the NEXT frame.
+# We use a tiny trick: detect click BEFORE rendering the panel so
+# the panel immediately reflects the new state in the same script run.
+_col_btn, _col_pad = st.columns([1, 5])
+with _col_btn:
+    _clicked = st.button("⚙ Battery Inputs", use_container_width=True)
+
+if _clicked:
+    st.session_state.show_inputs = not st.session_state.show_inputs
+
+# ── Battery Sensor Inputs panel (collapsible in main page) ───────────────────
+if st.session_state.show_inputs:
+    st.markdown('<div class="neu-card">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="card-title">� Battery Sensor Inputs</div>',
+        unsafe_allow_html=True,
+    )
+
+    _c1, _c2, _c3 = st.columns(3)
+    with _c1:
+        st.session_state.ir = st.number_input(
+            "Internal Resistance — IR (Ω)",
+            min_value=0.01, max_value=0.08,
+            value=float(st.session_state.ir), step=0.001,
+            format="%.3f"
+        )
+        st.session_state.tavg = st.number_input(
+            "Average Temperature — Tavg (°C)",
+            min_value=10.0, max_value=50.0,
+            value=float(st.session_state.tavg), step=0.5,
+            format="%.1f"
+        )
+    with _c2:
+        st.session_state.qc = st.number_input(
+            "Charge Capacity — QC (Ah)",
+            min_value=0.5, max_value=2.5,
+            value=float(st.session_state.qc), step=0.01,
+            format="%.2f"
+        )
+        st.session_state.tmax = st.number_input(
+            "Maximum Temperature — Tmax (°C)",
+            min_value=15.0, max_value=60.0,
+            value=float(st.session_state.tmax), step=0.5,
+            format="%.1f"
+        )
+    with _c3:
+        st.session_state.qd = st.number_input(
+            "Discharge Capacity — QD (Ah)",
+            min_value=0.5, max_value=2.5,
+            value=float(st.session_state.qd), step=0.01,
+            format="%.2f"
+        )
+        st.session_state.chargetime = st.number_input(
+            "Charge Time (seconds)",
+            min_value=1000, max_value=10000,
+            value=int(st.session_state.chargetime), step=100
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 # ── Load Models ──────────────────────────────────────────────────────────────
 with st.spinner("Loading ML models …"):
     gru_model, dqn_model, scaler_X, scaler_y = load_models()
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  SIDEBAR — Battery Sensor Inputs (6 parameters)
-# ══════════════════════════════════════════════════════════════════════════════
-st.sidebar.markdown("## 🔋 Battery Sensor Inputs")
-st.sidebar.markdown("---")
-
-ir = st.sidebar.slider(
-    "Internal Resistance — IR (Ω)", 0.010, 0.080, 0.020, step=0.001, format="%.3f"
-)
-qc = st.sidebar.slider(
-    "Charge Capacity — QC (Ah)", 0.50, 2.50, 1.85, step=0.01, format="%.2f"
-)
-qd = st.sidebar.slider(
-    "Discharge Capacity — QD (Ah)", 0.50, 2.50, 1.80, step=0.01, format="%.2f"
-)
-tavg = st.sidebar.slider(
-    "Average Temperature — Tavg (°C)", 10.0, 50.0, 25.0, step=0.5
-)
-tmax = st.sidebar.slider(
-    "Maximum Temperature — Tmax (°C)", 15.0, 60.0, 32.0, step=0.5
-)
-chargetime = st.sidebar.slider(
-    "Charge Time (seconds)", 1000, 10000, 3600, step=100
-)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -107,19 +158,23 @@ chargetime = st.sidebar.slider(
 # ══════════════════════════════════════════════════════════════════════════════
 
 # 1. GRU → raw SoH
-sequence = prepare_gru_sequence(scaler_X, ir, qc, qd, tavg, tmax, chargetime)
+sequence = prepare_gru_sequence(
+    scaler_X,
+    st.session_state.ir, st.session_state.qc, st.session_state.qd,
+    st.session_state.tavg, st.session_state.tmax, st.session_state.chargetime,
+)
 raw_soh = predict_soh(gru_model, scaler_y, sequence)
 
 # 2. Auto-derive Cycle & Current
-est_cycle = estimate_cycle(qd, qc)
-est_current = estimate_current(qc, chargetime)
+est_cycle = estimate_cycle(st.session_state.qd, st.session_state.qc)
+est_current = estimate_current(st.session_state.qc, st.session_state.chargetime)
 
 # 3. Calibrate SoH
 cal_soh = calibrate_soh(raw_soh, est_cycle)
 health_label = get_battery_health_label(cal_soh)
 
 # 4. RL state + decision
-rl_state = construct_rl_state(cal_soh, tavg, est_cycle, est_current)
+rl_state = construct_rl_state(cal_soh, st.session_state.tavg, est_cycle, est_current)
 action, q_values = predict_rl_action(dqn_model, rl_state)
 
 action_map = {0: "decrease", 1: "maintain", 2: "increase"}
@@ -133,13 +188,15 @@ action_text = action_text_map.get(action, "Maintain Charging")
 
 # 5. SHAP
 shap_values, chosen_action, _ = compute_shap_values(dqn_model, rl_state)
-gru_raw_inputs = [ir, qc, qd, tavg, tmax, chargetime]
+gru_raw_inputs = [
+    st.session_state.ir, st.session_state.qc, st.session_state.qd,
+    st.session_state.tavg, st.session_state.tmax, st.session_state.chargetime,
+]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  DASHBOARD LAYOUT
+#  DASHBOARD LAYOUT  — Row 1: Battery Health | Charging Decision
 # ══════════════════════════════════════════════════════════════════════════════
-
 col_h, col_a = st.columns([1, 1], gap="large")
 
 # ── Battery Health Panel ─────────────────────────────────────────────────────
@@ -161,7 +218,7 @@ with col_h:
         unsafe_allow_html=True,
     )
 
-    # Raw vs Calibrated inset metrics
+    # Inset metric boxes
     st.markdown(
         '<div class="soh-metrics">'
         f'<div class="soh-metric"><div class="metric-val">{raw_pct:.2f}%</div>'
@@ -176,9 +233,13 @@ with col_h:
         unsafe_allow_html=True,
     )
 
-    # Plotly gauge (light theme)
-    gauge_color = {"Healthy": "#22c55e", "Moderate": "#f59e0b",
-                   "Degrading": "#fb923c", "Severely Degraded": "#ef4444"}.get(health_label, "#f59e0b")
+    # Plotly semicircle gauge
+    gauge_color = {
+        "Healthy": "#22c55e",
+        "Moderate": "#f59e0b",
+        "Degrading": "#fb923c",
+        "Severely Degraded": "#ef4444",
+    }.get(health_label, "#f59e0b")
 
     fig_g = go.Figure(go.Indicator(
         mode="gauge+number",
@@ -191,13 +252,15 @@ with col_h:
             "bgcolor": "#e2e8f0",
             "borderwidth": 0,
             "steps": [
-                {"range": [0, 70],  "color": "rgba(239,68,68,0.08)"},
-                {"range": [70, 80], "color": "rgba(251,146,60,0.08)"},
-                {"range": [80, 90], "color": "rgba(245,158,11,0.08)"},
-                {"range": [90,100], "color": "rgba(34,197,94,0.08)"},
+                {"range": [0, 70],   "color": "rgba(239,68,68,0.08)"},
+                {"range": [70, 80],  "color": "rgba(251,146,60,0.08)"},
+                {"range": [80, 90],  "color": "rgba(245,158,11,0.08)"},
+                {"range": [90, 100], "color": "rgba(34,197,94,0.08)"},
             ],
-            "threshold": {"line": {"color": "#1e293b", "width": 2},
-                          "thickness": 0.8, "value": cal_pct},
+            "threshold": {
+                "line": {"color": "#1e293b", "width": 2},
+                "thickness": 0.8, "value": cal_pct,
+            },
         },
     ))
     fig_g.update_layout(
@@ -222,14 +285,14 @@ with col_a:
     st.markdown(
         '<div class="rl-pills">'
         f'<div class="rl-pill">SoH: <strong>{cal_soh:.4f}</strong></div>'
-        f'<div class="rl-pill">Temp: <strong>{tavg:.1f} °C</strong></div>'
+        f'<div class="rl-pill">Temp: <strong>{st.session_state.tavg:.1f} °C</strong></div>'
         f'<div class="rl-pill">Cycle: <strong>{est_cycle}</strong></div>'
         f'<div class="rl-pill">Current: <strong>{est_current:.2f} A</strong></div>'
         '</div>',
         unsafe_allow_html=True,
     )
 
-    # Q-values bar chart (light theme)
+    # Q-values bar chart
     fig_q = go.Figure(data=[go.Bar(
         x=["Decrease", "Maintain", "Increase"],
         y=q_values.tolist(),
@@ -252,7 +315,7 @@ with col_a:
     st.markdown("</div>", unsafe_allow_html=True)
 
 
-# ── Divider ──────────────────────────────────────────────────────────────────
+# ── Section Divider ──────────────────────────────────────────────────────────
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 
@@ -274,64 +337,73 @@ with tabs[0]:
     try:
         fig = generate_feature_importance_plot(shap_values, chosen_action=chosen_action)
         st.pyplot(fig)
-    except Exception:
-        st.warning("Feature importance plot unavailable")
+    except Exception as e:
+        st.warning(f"Plot unavailable: {str(e)}")
+        print(f"XAI Error in tab 0: {str(e)}")
 
 with tabs[1]:
     try:
         fig = generate_shap_distribution_plot(shap_values, rl_state, chosen_action=chosen_action)
         st.pyplot(fig)
-    except Exception:
+    except Exception as e:
         st.warning("Distribution plot unavailable")
+        print(f"XAI Error in tab 1: {str(e)}")
 
 with tabs[2]:
     try:
         fig = generate_shap_heatmap(shap_values)
         st.pyplot(fig)
-    except Exception:
+    except Exception as e:
         st.warning("Heatmap unavailable")
+        print(f"XAI Error in tab 2: {str(e)}")
 
 with tabs[3]:
     try:
         fig = generate_temperature_dependence(dqn_model, rl_state)
         st.pyplot(fig)
-    except Exception:
+    except Exception as e:
         st.warning("Temperature dependence plot unavailable")
+        print(f"XAI Error in tab 3: {str(e)}")
 
 with tabs[4]:
     try:
         fig = generate_cycle_dependence(dqn_model, rl_state)
         st.pyplot(fig)
-    except Exception:
+    except Exception as e:
         st.warning("Cycle influence plot unavailable")
+        print(f"XAI Error in tab 4: {str(e)}")
 
 with tabs[5]:
     try:
         fig = generate_current_dependence(dqn_model, rl_state)
         st.pyplot(fig)
-    except Exception:
+    except Exception as e:
         st.warning("Current influence plot unavailable")
+        print(f"XAI Error in tab 5: {str(e)}")
 
 with tabs[6]:
     try:
         fig = generate_action_influence_plot(shap_values)
         st.pyplot(fig)
-    except Exception:
+    except Exception as e:
         st.warning("Action influence plot unavailable")
+        print(f"XAI Error in tab 6: {str(e)}")
 
 with tabs[7]:
     try:
         fig = generate_feature_ranking_plot(shap_values)
         st.pyplot(fig)
-    except Exception:
+    except Exception as e:
         st.warning("Feature ranking plot unavailable")
+        print(f"XAI Error in tab 7: {str(e)}")
 
 with tabs[8]:
     try:
         fig = generate_combined_xai_plot(shap_values, rl_state, gru_raw_inputs, chosen_action)
         st.pyplot(fig)
-    except Exception:
+    except Exception as e:
         st.warning("Combined GRU + RL plot unavailable")
+        print(f"XAI Error in tab 8: {str(e)}")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -340,7 +412,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 st.markdown('<div class="neu-card">', unsafe_allow_html=True)
 st.markdown('<div class="card-title">💡 AI Reasoning</div>', unsafe_allow_html=True)
 
-reasoning = generate_reasoning_text(action, cal_soh, tavg, est_cycle, est_current)
+reasoning = generate_reasoning_text(action, cal_soh, st.session_state.tavg, est_cycle, est_current)
 st.markdown(f'<div class="explanation-box">{reasoning}</div>', unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)

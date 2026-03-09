@@ -280,6 +280,44 @@ section[data-testid="stSidebar"] h3 {
         inset -3px -3px 6px #ffffff;
 }
 
+/* ---------- Number Input Fields ---------- */
+input[type="number"] {
+    background: #ecf0f3 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #1e293b !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    box-shadow:
+        inset 3px 3px 6px #c5cbd3,
+        inset -3px -3px 6px #ffffff !important;
+    padding: 6px 10px !important;
+    transition: box-shadow 0.2s ease;
+}
+
+input[type="number"]:focus {
+    outline: none !important;
+    box-shadow:
+        inset 4px 4px 8px #c5cbd3,
+        inset -4px -4px 8px #ffffff,
+        0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Step arrow buttons (▲▼) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 28px;
+    cursor: pointer;
+}
+
+/* Number input container label */
+div[data-testid="stNumberInput"] label {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+}
+
 /* ---------- Divider ---------- */
 .section-divider {
     border: none;
@@ -571,5 +609,71 @@ h6 {
     .js-plotly-plot .plotly .main-svg {
         transform: scale(0.95);
         transform-origin: top center;
+    }
+}
+
+/* ── All Buttons (Neumorphic) ────────────────────────────────────────── */
+.stButton>button {
+    background: #ecf0f3;
+    color: #333333;
+    border: none;
+    border-radius: 14px;
+    padding: 8px 18px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    box-shadow:
+        5px 5px 10px #c5cbd3,
+        -5px -5px 10px #ffffff;
+    transition: all 0.2s ease;
+}
+
+.stButton>button:hover {
+    box-shadow:
+        6px 6px 12px #c5cbd3,
+        -6px -6px 12px #ffffff;
+    color: #3b82f6;
+}
+
+.stButton>button:active {
+    box-shadow:
+        inset 3px 3px 6px #c5cbd3,
+        inset -3px -3px 6px #ffffff;
+}
+
+/* ── ⚙ Battery Inputs Toggle Button ─────────────────────────────────── */
+/* Target the toggle button by its Streamlit key */
+div[data-testid="stButton"] button[kind="secondary"],
+div[data-testid="stButton"] button {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Sidebar sliders label color */
+section[data-testid="stSidebar"] .stSlider>label {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+}
+
+/* Sidebar scrollbar */
+section[data-testid="stSidebar"] ::-webkit-scrollbar {
+    width: 4px;
+}
+
+section[data-testid="stSidebar"] ::-webkit-scrollbar-thumb {
+    background: #c5cbd3;
+    border-radius: 3px;
+}
+
+/* Mobile: collapse columns to single column */
+@media screen and (max-width: 640px) {
+    div[data-testid="stHorizontalBlock"] {
+        flex-direction: column !important;
+        gap: 0.8rem !important;
+    }
+
+    div[data-testid="column"] {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
     }
 }
