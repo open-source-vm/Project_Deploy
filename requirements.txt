@@ -1,9 +1,9 @@
-tensorflow==2.12.0
-numpy==1.23.5
 streamlit
+numpy
 pandas
 joblib
-shap
 plotly
 matplotlib
 scikit-learn
+shap
+tensorflow==2.13.0
