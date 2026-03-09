@@ -19,7 +19,8 @@ import numpy as np
 import joblib
 import streamlit as st
 import tensorflow as tf
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import load_model, Sequential
+from tensorflow.keras.layers import GRU, Dense, Input
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -44,13 +45,27 @@ def load_model_safe(filepath):
         with tf.keras.utils.custom_object_scope({}):
             return load_model(filepath, compile=False, safe_mode=False)
 
+def load_gru_model(weights_path):
+    """Manually rebuild GRU architecture and load weights."""
+    model = Sequential([
+        Input(shape=(20, 6)),
+        GRU(64, return_sequences=True),
+        GRU(32),
+        Dense(16, activation="relu"),
+        Dense(1)
+    ])
+    model.load_weights(weights_path)
+    return model
+
+
 # ---------------------------------------------------------------------------
 # Model Loading (cached)
 # ---------------------------------------------------------------------------
 @st.cache_resource
 def load_models():
     """Load GRU, Double-DQN models and scalers."""
-    gru_model = load_model_safe(os.path.join(MODEL_DIR, "gru_soh_model.keras"))
+    # Use specified extension or adjust depending on your file structure
+    gru_model = load_gru_model(os.path.join(MODEL_DIR, "gru_soh_model.keras"))
     dqn_model = load_model_safe(os.path.join(MODEL_DIR, "double_dqn_calibrated.keras"))
     scaler_X = joblib.load(os.path.join(MODEL_DIR, "gru_scaler_X.pkl"))
     scaler_y = joblib.load(os.path.join(MODEL_DIR, "gru_scaler_y.pkl"))
