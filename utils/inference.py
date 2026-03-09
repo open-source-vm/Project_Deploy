@@ -19,7 +19,7 @@ import numpy as np
 import joblib
 import streamlit as st
 import tensorflow as tf
-from tensorflow.keras.models import load_model as _keras_load
+from tensorflow.keras.models import load_model
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -34,14 +34,15 @@ ACTION_LABELS = {0: "Decrease Charging", 1: "Maintain Charging", 2: "Increase Ch
 
 
 def load_model_safe(filepath):
-    """Safely load Keras models with custom objects."""
-    return _keras_load(
-        filepath,
-        compile=False,
-        custom_objects={
-            "Sequential": tf.keras.Sequential
-        }
-    )
+    """
+    Load Keras models with backward compatibility for legacy .h5 models.
+    """
+    try:
+        return load_model(filepath, compile=False)
+    except Exception:
+        # Fallback for legacy serialized models
+        with tf.keras.utils.custom_object_scope({}):
+            return load_model(filepath, compile=False, safe_mode=False)
 
 # ---------------------------------------------------------------------------
 # Model Loading (cached)
