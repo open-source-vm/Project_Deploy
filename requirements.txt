@@ -1,9 +1,9 @@
 streamlit
-numpy
+numpy==1.23.5
 pandas
 joblib
 plotly
 matplotlib
 scikit-learn
 shap
-tensorflow==2.13.0
+tensorflow==2.12.0
