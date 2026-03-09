@@ -12,8 +12,6 @@ import os
 import numpy as np
 import joblib
 import streamlit as st
-import tensorflow as tf
-from tensorflow.keras.models import load_model
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
@@ -31,6 +29,8 @@ ACTION_LABELS = {0: "Decrease Charging", 1: "Maintain Charging", 2: "Increase Ch
 
 def load_model_safe(filepath):
     """Safely load Keras models with custom objects."""
+    import tensorflow as tf
+    from tensorflow.keras.models import load_model
     return load_model(
         filepath,
         compile=False,

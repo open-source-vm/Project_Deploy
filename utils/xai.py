@@ -16,8 +16,8 @@ Handles SHAP shapes: (samples, features, actions) → slice by chosen action.
 """
 
 import numpy as np
-import shap
 import matplotlib
+import streamlit as st
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -88,12 +88,13 @@ def _all_actions_shap(shap_values):
 # ---------------------------------------------------------------------------
 # Core SHAP Computation
 # ---------------------------------------------------------------------------
-def compute_shap_values(dqn_model, state, feature_names=None):
+def compute_shap_values(_dqn_model, state, feature_names=None):
+    import shap
     if feature_names is None:
         feature_names = RL_FEATURES
 
     def predict_fn(x):
-        return dqn_model.predict(x, verbose=0)
+        return _dqn_model(x, training=False).numpy()
 
     background = np.array([[1.0, 25.0, 100.0, 50.0]])
     explainer = shap.KernelExplainer(predict_fn, background)
@@ -188,12 +189,12 @@ def generate_shap_heatmap(shap_values, feature_names=None):
 # ---------------------------------------------------------------------------
 # 4–6. Dependence Plots
 # ---------------------------------------------------------------------------
-def _dependence(dqn_model, state, idx, name, rng, n=30):
+def _dependence(_dqn_model, state, idx, name, rng, n=30):
     xs = np.linspace(rng[0], rng[1], n)
     curves = {a: [] for a in range(3)}
     for v in xs:
         s = state.copy(); s[0, idx] = v
-        q = dqn_model.predict(s, verbose=0)[0]
+        q = _dqn_model(s, training=False).numpy()[0]
         for a in range(3):
             curves[a].append(q[a])
 

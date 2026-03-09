@@ -303,12 +303,37 @@ input[type="number"]:focus {
         0 0 0 2px rgba(59, 130, 246, 0.25) !important;
 }
 
-/* Step arrow buttons (▲▼) */
+/* Step arrow buttons (native) */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     opacity: 1;
     height: 28px;
     cursor: pointer;
+}
+
+/* Step wrapper buttons (+/-) from Streamlit */
+div[data-testid="stNumberInput"] button {
+    background: #ecf0f3 !important;
+    color: #475569 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    box-shadow:
+        inset 2px 2px 4px #c5cbd3,
+        inset -2px -2px 4px #ffffff !important;
+    transition: all 0.2s ease;
+}
+
+div[data-testid="stNumberInput"] button:hover {
+    color: #3b82f6 !important;
+    box-shadow:
+        inset 3px 3px 5px #c5cbd3,
+        inset -3px -3px 5px #ffffff !important;
+}
+
+div[data-testid="stNumberInput"] button:active {
+    box-shadow:
+        3px 3px 6px #c5cbd3,
+        -3px -3px 6px #ffffff !important;
 }
 
 /* Number input container label */
@@ -640,19 +665,7 @@ h6 {
         inset -3px -3px 6px #ffffff;
 }
 
-/* ── ⚙ Battery Inputs Toggle Button ─────────────────────────────────── */
-/* Target the toggle button by its Streamlit key */
-div[data-testid="stButton"] button[kind="secondary"],
-div[data-testid="stButton"] button {
-    font-family: 'Inter', sans-serif;
-}
-
-/* Sidebar sliders label color */
-section[data-testid="stSidebar"] .stSlider>label {
-    font-size: 0.82rem !important;
-    font-weight: 600 !important;
-    color: #475569 !important;
-}
+/* ── ⚙ Battery Inputs Pure HTML Toggle (Uiverse.io Theme) ─────────────────── */
 
 /* Sidebar scrollbar */
 section[data-testid="stSidebar"] ::-webkit-scrollbar {
