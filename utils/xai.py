@@ -362,8 +362,9 @@ def generate_reasoning_text(action, soh, temp, cycle, current):
             reasons.append("Battery parameters are under safe thresholds, allowing "
                            "accelerated charging speed.")
 
-    text = f"**Decision: {action_str}**\n\n"
-    text += f"The AI controller recommended to **{action_str.lower()}** based on:\n\n"
+    text = f"<strong>Decision: {action_str}</strong><br><br>\n"
+    text += f"The AI controller recommended to <strong>{action_str.lower()}</strong> based on:<ul>\n"
     for r in reasons:
-        text += f"- {r}\n"
+        text += f"<li>{r}</li>\n"
+    text += "</ul>"
     return text

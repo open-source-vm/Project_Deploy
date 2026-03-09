@@ -62,6 +62,7 @@ section[data-testid="stSidebar"] h3 {
     letter-spacing: -0.5px;
     background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #3b82f6 100%);
     background-size: 200% auto;
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: titleShift 4s ease infinite;
@@ -335,4 +336,240 @@ h6 {
 /* ---------- Plotly transparent ---------- */
 .js-plotly-plot .plotly .main-svg {
     background: transparent !important;
+}
+
+/* ==========================================================================
+   Responsive Media Queries
+   ========================================================================== */
+
+/* 1440px (Large Desktop) */
+@media screen and (max-width: 1440px) {
+    .dashboard-title {
+        font-size: 1.85rem;
+    }
+
+    .neu-card {
+        padding: 1.35rem;
+    }
+
+    .soh-value {
+        font-size: 2.6rem;
+    }
+}
+
+/* 1200px (Desktop) */
+@media screen and (max-width: 1200px) {
+    .dashboard-title {
+        font-size: 1.65rem;
+    }
+
+    .soh-metrics {
+        gap: 0.6rem;
+    }
+
+    .soh-metric {
+        min-width: 100px;
+        padding: 8px 14px;
+    }
+
+    .rl-pill {
+        font-size: 0.75rem;
+        padding: 5px 12px;
+    }
+
+    .action-badge {
+        font-size: 0.95rem;
+    }
+}
+
+/* 1024px (Laptop / Tablet Landscape) */
+@media screen and (max-width: 1024px) {
+    .dashboard-title {
+        font-size: 1.45rem;
+    }
+
+    .neu-card {
+        padding: 1.15rem;
+        border-radius: 18px;
+        margin-bottom: 1rem;
+    }
+
+    .soh-value {
+        font-size: 2.3rem;
+    }
+
+    .soh-metric {
+        min-width: 90px;
+        padding: 7px 12px;
+    }
+
+    .soh-metric .metric-val {
+        font-size: 1.05rem;
+    }
+
+    .soh-metric .metric-lbl {
+        font-size: 0.68rem;
+    }
+
+    .action-badge {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        font-size: 0.75rem;
+    }
+}
+
+/* 768px (Tablet Portrait) */
+@media screen and (max-width: 768px) {
+    .dashboard-title {
+        font-size: 1.3rem;
+        margin-top: 0.8rem;
+    }
+
+    .dashboard-subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .neu-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 16px;
+        /* Reduce card shadows slightly for smaller screens */
+        box-shadow:
+            6px 6px 12px #c5cbd3,
+            -6px -6px 12px #ffffff;
+    }
+
+    .neu-card:hover {
+        box-shadow:
+            8px 8px 16px #c5cbd3,
+            -8px -8px 16px #ffffff;
+    }
+
+    .neu-inset {
+        padding: 0.85rem;
+        box-shadow:
+            inset 3px 3px 6px #c5cbd3,
+            inset -3px -3px 6px #ffffff;
+    }
+
+    .soh-value {
+        font-size: 2.1rem;
+    }
+
+    .soh-metrics {
+        flex-direction: row;
+        gap: 0.6rem;
+    }
+
+    .soh-metric {
+        flex: 1 1 45%;
+        /* Switch to grid/wrapped layout */
+        padding: 8px 10px;
+    }
+
+    .soh-metric .metric-val {
+        font-size: 1rem;
+    }
+
+    .rl-pills {
+        justify-content: center;
+    }
+
+    .rl-pill {
+        flex: 1 1 40%;
+        text-align: center;
+    }
+
+    .card-title {
+        font-size: 0.75rem;
+        justify-content: center;
+    }
+
+    .explanation-box {
+        font-size: 0.85rem;
+        padding: 1rem;
+    }
+
+    /* Ensure layout stacks on tablet / mobile */
+    div[data-testid="stHorizontalBlock"] {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+
+    div[data-testid="column"] {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+}
+
+/* 480px (Mobile) */
+@media screen and (max-width: 480px) {
+    .dashboard-title {
+        font-size: 1.15rem;
+    }
+
+    .dashboard-subtitle {
+        font-size: 0.75rem;
+    }
+
+    .neu-card {
+        padding: 0.85rem;
+        border-radius: 14px;
+        /* Softer shadow on mobile */
+        box-shadow:
+            4px 4px 8px #c5cbd3,
+            -4px -4px 8px #ffffff;
+    }
+
+    .soh-value {
+        font-size: 1.8rem;
+    }
+
+    .soh-metric {
+        min-width: 45%;
+        padding: 6px 8px;
+    }
+
+    .action-badge {
+        font-size: 0.85rem;
+        padding: 8px 14px;
+    }
+
+    /* Allow tabs to wrap on mobile */
+    .stTabs [data-baseweb="tab-list"] {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        flex: 1 1 30%;
+        text-align: center;
+        font-size: 0.7rem;
+        padding: 8px 4px;
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    /* Larger sliders for mobile touch targets */
+    .stSlider [data-baseweb="slider"] {
+        height: 28px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .stSlider .st-bg {
+        height: 6px;
+        /* slightly thicker bar */
+    }
+
+    /* Scale charts down on mobile */
+    .js-plotly-plot .plotly .main-svg {
+        transform: scale(0.95);
+        transform-origin: top center;
+    }
 }
